@@ -516,6 +516,18 @@ TotalPowerOnly: List[Register] = [
         HoldingRegisters.PV1InPower, HoldingRegisters.PV2InPower
 ]
 
+PhasePower: List[Register] = [
+        HoldingRegisters.TodayBuyGrid,HoldingRegisters.TodayToLoad,HoldingRegisters.TodayFromPV, HoldingRegisters.TodaySoldGrid,
+        HoldingRegisters.TotalBuyGrid,HoldingRegisters.TotalToLoad,HoldingRegisters.TotalFromPV, HoldingRegisters.TotalSellGrid,
+        HoldingRegisters.TodayFromPVString1,HoldingRegisters.TodayFromPVString2,
+        HoldingRegisters.GRIDPhaseAPower, HoldingRegisters.GRIDPhaseBPower, HoldingRegisters.GRIDPhaseCPower, HoldingRegisters.GRIDTotalPower,
+        HoldingRegisters.BatteryOutPower, HoldingRegisters.BatterySOC, 
+        HoldingRegisters.LoadPhaseAPower, HoldingRegisters.LoadPhaseBPower, HoldingRegisters.LoadPhaseCPower, HoldingRegisters.LoadTotalPower,
+        HoldingRegisters.InverterPhaseAPowerOut, HoldingRegisters.InverterPhaseBPowerOut, HoldingRegisters.InverterPhaseCPowerOut, HoldingRegisters.InverterTotalPowerOut,
+        HoldingRegisters.PV1InPower, HoldingRegisters.PV2InPower, HoldingRegisters.BatteryChargeToday,HoldingRegisters.PV1Voltage,HoldingRegisters.PV2Voltage,HoldingRegisters.PV1Current,HoldingRegisters.PV2Current
+]
+
+
 
 class WritableRegister(object):
     """ Register which supports writing

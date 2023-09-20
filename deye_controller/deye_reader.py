@@ -1,24 +1,27 @@
 from pysolarmanv5 import PySolarmanV5, V5FrameError
-from .modbus.protocol import HoldingRegisters, BatteryOnlyRegisters, TotalPowerOnly
+from .modbus.protocol import HoldingRegisters, BatteryOnlyRegisters, TotalPowerOnly, PhasePower
 from .logger_scan import solar_scan
 from argparse import ArgumentParser
 from .utils import group_registers, map_response
 import json
+from types import SimpleNamespace
+from numpy.f2py.crackfortran import setattrspec
 
 
-def read_inverter(address: str, logger_serial: int, batt_only=False, power_only=False, combo=False,
+def read_inverter(address: str, logger_serial: int, batt_only=False, power_only=False, phase_power_only = False, combo=False,
                   as_json=False, to_file=None):
     inv = PySolarmanV5(address, int(logger_serial), port=8899, mb_slave_id=1, verbose=False, socket_timeout=10,
                        error_correction=True)
     iterator = []
-    js = {'logger': logger_serial,
-          'serial': 0,
-          'data': []
-          }
+    js = dict(); 
+    js['logger'] = logger_serial;
+    js['serial'] = 0;
     if batt_only:
         iterator = [HoldingRegisters.SerialNumber] + BatteryOnlyRegisters
     elif power_only:
         iterator = [HoldingRegisters.SerialNumber] + TotalPowerOnly
+    elif phase_power_only:
+        iterator = [HoldingRegisters.SerialNumber] + [HoldingRegisters.DeviceTime] + PhasePower        
     elif combo:
         iterator = [HoldingRegisters.SerialNumber] + BatteryOnlyRegisters
         for reg in TotalPowerOnly:
@@ -39,9 +42,10 @@ def read_inverter(address: str, logger_serial: int, batt_only=False, power_only=
                 suffix = ''
             if as_json:
                 if reg == HoldingRegisters.SerialNumber:
-                    js['serial'] = reg.format()
+                    js['serial'] = reg.format();
                 else:
-                    js['data'].append({reg.description: {'addr': reg.address, 'value': reg.format(), 'unit': suffix}})
+                    js[reg.description] = {'addr':reg.address, 'value': reg.format(), 'unit': suffix};
+#                    js['data'].append(reg.description': {"addr":' reg.address ', "value":' reg.format() ' "unit":' suffix}})
             else:
                 string = '[{:>35s}]: {} {}'.format(reg.description.title(), reg.format(), suffix)
                 print(string, flush=True)

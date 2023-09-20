@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>deye-controller</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.python.pydev.PyDevBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.python.pydev.pythonNature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>deye_controller</name>
+			<type>2</type>
+			<location>/home/piotr/devel/deye/deye-controller/deye_controller</location>
+		</link>
+		<link>
+			<name>examples</name>
+			<type>2</type>
+			<location>/home/piotr/devel/deye/deye-controller/examples</location>
+		</link>
+	</linkedResources>
+</projectDescription>
