@@ -4,8 +4,6 @@ from .logger_scan import solar_scan
 from argparse import ArgumentParser
 from .utils import group_registers, map_response
 import json
-from types import SimpleNamespace
-from numpy.f2py.crackfortran import setattrspec
 
 
 def read_inverter(address: str, logger_serial: int, batt_only=False, power_only=False, phase_power_only = False, combo=False,
