@@ -7,7 +7,7 @@ import json
 
 
 def read_inverter(address: str, logger_serial: int, batt_only=False, power_only=False, phase_power_only = False, combo=False,
-                  as_json=False, to_file=None):
+                  as_json=False, jindent=2, to_file=None):
     inv = PySolarmanV5(address, int(logger_serial), port=8899, mb_slave_id=1, verbose=False, socket_timeout=10,
                        error_correction=True)
     iterator = []
@@ -52,13 +52,13 @@ def read_inverter(address: str, logger_serial: int, batt_only=False, power_only=
         if to_file:
             try:
                 with open(to_file, 'w') as f:
-                    f.write(json.dumps(js, indent=2, default=str))
+                    f.write(json.dumps(js, indent=jindent, default=str))
                 print(f'Data saved to: {to_file}')
             except Exception as e:
                 print(f'Error occurred during the write to <{to_file}>. Error: {e}')
-                print(json.dumps(js, indent=2, default=str))
+                print(json.dumps(js, indent=jindent, default=str))
         else:
-            print(json.dumps(js, indent=2, default=str))
+            print(json.dumps(js, indent=jindent, default=str))
 
     try:
         inv.disconnect()
