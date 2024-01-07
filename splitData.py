@@ -1,5 +1,6 @@
 import json
 import datetime;
+import pandas as pd;
 def split(filePath):
 #    try:
         with open(filePath, 'r') as f:
@@ -8,7 +9,9 @@ def split(filePath):
             dailyData = [];
             dailyPowerData = [];
             hourlyData = [];
-            hourlyPowerData = [];
+            hourlyPowerData = dict();
+            hourlyDiffData= dict();
+            prevPowerEntry = None;
             powerProps = [
                 "battery_charge_today",
                 "battery_discharge_today",
@@ -50,13 +53,20 @@ def split(filePath):
                             hour = jsonTime.hour;
                             if hour  != prevHour:
                                 if prevHour != -1:
-                                    print(f"hour: {prevHour:02d} \n");
+#                                    print(f"hour: {prevHour:02d} \n");
                                     hourlyData.append(jsonPrev);
                                     hourlyPowerEntry={};
-                                    hourlyPowerEntry["inverter_time"] = jsonPrev["inverter_time"]["value"];
+                                    hourlyDiffEntry={};
+#                                    hourlyPowerEntry["inverter_time"] = jsonPrev["inverter_time"]["value"];
                                     for powerProp in powerProps:
                                         hourlyPowerEntry[powerProp] = jsonPrev[powerProp]["value"];
-                                    hourlyPowerData.append(hourlyPowerEntry);
+                                        if (prevPowerEntry != None):
+                                            hourlyDiffEntry[powerProp] = hourlyPowerEntry[powerProp];
+                                            if (prevPowerEntry[powerProp]<=hourlyPowerEntry[powerProp]):
+                                                hourlyDiffEntry[powerProp] -= prevPowerEntry[powerProp];
+                                            hourlyDiffData[jsonPrev["inverter_time"]["value"]]=hourlyDiffEntry;
+                                    prevPowerEntry = hourlyPowerEntry;
+                                    hourlyPowerData[jsonPrev["inverter_time"]["value"]]=hourlyPowerEntry;
                                 prevHour = hour;
                             if day  != prevDay:
                                 if prevDay != -1:
@@ -64,13 +74,6 @@ def split(filePath):
                                     jsonPrevTime = datetime.datetime.strptime(jsonPrevTimeString, "%Y-%m-%d %H:%M:%S");
                                     print(f"day: {jsonPrevTime.year}{jsonPrevTime.month:02d}{prevDay:02d} \n");
                                     dailyData.append(jsonPrev);
-                                    with open(f"{jsonPrevTime.year}{jsonPrevTime.month:02d}{prevDay:02d}hourly.json","w") as h:
-                                        json.dump(hourlyData, h, indent=3);
-                                        h.close();
-                                    with open(f"{jsonPrevTime.year}{jsonPrevTime.month:02d}{prevDay:02d}hourlypower.json","w") as h:
-                                        json.dump(hourlyPowerData, h, indent=3);
-                                        h.close();
-                                    hourlyData.clear();
                                 prevDay = day;                           
                         except Exception as e:
                             print("error parsing Json: " + str(e) + "\n<" +  jsonString + ">");
@@ -79,9 +82,20 @@ def split(filePath):
                     jsonString += line;                
                 count +=1;
             print("linecount: " + str(count) +"\n");
+            with open(f"hourly.json","w") as h:
+                json.dump(hourlyData, h, indent=3);
+                h.close();
+            with open(f"hourlypower.json","w") as h:
+                json.dump(hourlyPowerData, h, indent=3);
+                h.close();
             with open("daily.json","w") as d:
                 json.dump(dailyData, d, indent=3);
                 d.close();
+            df = pd.DataFrame.from_dict(hourlyPowerData,orient='index');
+            df.to_csv("hourlypower.csv");
+            diffDf = pd.DataFrame.from_dict(hourlyDiffData,orient='index');
+            diffDf.to_csv("hourlyDiffPower.csv");
+
 #    except Exception as e:
 #        print("exc: " + str(e) +"\n");
 #    finally:
