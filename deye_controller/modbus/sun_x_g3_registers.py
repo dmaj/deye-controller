@@ -142,6 +142,46 @@ class _ActivePowerRegulation (IntType):
         resActivePowerRegulation = inv.read_holding_registers(self.address, self.len)
         self.value = resActivePowerRegulation[0]
 
+class _DeviceTime(DeviceTime):
+
+    def __init__(self, inv, address, length, name):
+        super().__init__()
+        self.address = address
+        self.len = length
+        self.descriptio = name
+        self.suffix = ''
+        self.value = [0, 0, 0]
+        res = inv.read_holding_registers(self.address, self.len)
+        self.value = res[0] if self.len == 1 else res
+
+#=============== Writeable Registers =================
+class _DeviceTimeWriteable(WritableRegister):
+    """
+    Adjustments of the system time of the inverter
+    """
+    def __init__(self, inv, dt, address, length):
+        super(_DeviceTimeWriteable, self).__init__(22, length=length)
+        self.set(dt)
+        inv.write_multiple_holding_registers(address + 0, [self.modbus_value[0]])
+        inv.write_multiple_holding_registers(address + 1, [self.modbus_value[1]])
+        inv.write_multiple_holding_registers(address + 2, [self.modbus_value[2]])
+
+    def set(self, x: datetime.datetime):
+        """ Set the time of the inverter """
+        as_ints = [int(u) for u in x.strftime('%y %m %d %H %M %S').split(' ')]
+        self.modbus_value = to_inv_time(as_ints)
+        self.value = x
+
+class _ActivePowerRegulationWriteable(IntWritable):
+    """
+    Adjustments of the system time of the inverter
+    """
+    def __init__(self, inv, val, address, signed, low_limit, high_limit):
+        super().__init__(address=address, signed=signed, low_limit=low_limit, high_limit=high_limit)
+        self.set(val)
+        inv.write_multiple_holding_registers(self.address, [self.modbus_value])
+
+
 class SunXG3Registers:
 
     DeviceType = DeviceType()
@@ -149,15 +189,17 @@ class SunXG3Registers:
     SerialNumber = DeviceSerialNumber()
     RatedPower = IntType(8, 'rated_power')
     """ START OF WRITABLE Registers """
-    DeviceTime = DeviceTime()  # RW 62
+
     """ Not defined here """
     CommAddress = IntType(74, 'comm_address')
     SwitchOnOff = BoolType(80, 'switch_on_off')
     ''' Switch On / Off the inverter '''
     ControlMode = InverterControlMode()
 
+    DeviceTime = partial(_DeviceTime, address=22, length=3, name='inverter_time')
+
     ProductionToday = partial(_ProductionToday, address=60, name='day_energy', scale=10,  suffix='kWh')
-    ProductionTotal = partial (_ProductionTotal, address=63, name='total_energy', scale=10, suffix='kWh')
+    ProductionTotal = partial(_ProductionTotal, address=63, name='total_energy', scale=10, suffix='kWh')
 
     Phase1Voltage = partial(_Phase1Voltage, address=73, name='ac_l1_voltage', scale=10,  suffix='V')
     Phase1Current = partial(_Phase1Current, address=76, name='ac_l1_current', scale=10, suffix='A')
@@ -210,9 +252,9 @@ class SunXG3Registers:
                 and not x.startswith('as_')]
 
 class SunXG3RegistersWrite:
-    DeviceTime = DeviceTimeWriteable()
+    DeviceTime = partial(_DeviceTimeWriteable, address=22, length=3)
 
-    ActivePowerRegulation = IntWritable(address=40, signed=False, low_limit=0, high_limit=120)
+    ActivePowerRegulation = partial(_ActivePowerRegulationWriteable, address=40, signed=False, low_limit=0, high_limit=120)
 
 
 class Sun600G3Registers (SunXG3Registers):
