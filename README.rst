@@ -170,10 +170,28 @@ Example: Writing the ActivePowerRegulation register. It is also read out before 
             inv = PySolarmanV5('192.168.0.100', xxxxxxxx)
 
             print_reg(SunXG3Registers.ActivePowerRegulation(inv))
-            register = SunXG3RegistersWrite.ActivePowerRegulation
-            register.set(100)
-            inv.write_multiple_holding_registers(register.address, [register.modbus_value])
+            SunXG3RegistersWrite.ActivePowerRegulation(inv, 25)
             print_reg(SunXG3Registers.ActivePowerRegulation(inv))
+
+            inv.disconnect()
+
+Example: Setting and getting Device Time.
+
+    .. code-block:: python
+
+        def print_reg(register):
+            print(register.description, register.format(), register.suffix)
+        
+        if __name__ == '__main__':
+            import datetime
+            from pysolarmanv5 import PySolarmanV5
+            from deye_controller.modbus.sun_x_g3_registers import SunXG3Registers, SunXG3RegistersWrite
+        
+            inv = PySolarmanV5('192.168.0.100', xxxxxxxx)
+
+            print_reg(SunXG3Registers.DeviceTime(inv))
+            SunXG3RegistersWrite.DeviceTime(inv, datetime.datetime.now())
+            print_reg(SunXG3Registers.DeviceTime(inv))
 
             inv.disconnect()
 
